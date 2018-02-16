@@ -1,0 +1,203 @@
+<html>
+<head>
+	<!-- 
+		Author: g4xyk00
+		Update: 20180216
+
+		Reference: 
+		https://developer.mozilla.org/en-US/docs/Web/API/Navigator
+		http://webkay.robinlinus.com/
+	-->
+
+	<title>JSRecon</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script src="webrtc-ips.js"></script>
+	<script src="network-scanner.js"></script>
+</head>
+<body>
+<div class="container">
+<h1><span class="glyphicon glyphicon-search"></span> JS Recon</h1>
+Reconnaissance on browser using Javascript <br/>
+<small> Author: g4xyk00 </small>
+<hr/>
+
+<div class="row">
+<div class="col-sm-4">
+	<div class="panel panel-danger">
+	<div class="panel-heading">
+		<span class="glyphicon glyphicon-info-sign"></span>
+		<b>Browser Information</b></div>
+	<div class="panel-body">
+
+	<kbd>URL</kbd>
+	<div style="word-wrap: break-word;">
+	<script> 
+		document.write(location.href)
+	</script>
+	</div>
+	<hr/>
+
+	<kbd>Response</kbd>
+	<script> 
+		var xhttp = new XMLHttpRequest();
+		xhttp.open("GET", location.href, true);
+		xhttp.send();
+
+		xhttp.onreadystatechange = function() {
+	    if (this.readyState == 4 && this.status == 200) {
+	      var headers = xhttp.getAllResponseHeaders();
+	      document.getElementById("response").innerHTML = headers;
+	    }
+		};
+	</script>
+	<span id="response"></span>
+
+	<hr/>
+
+	<kbd>Date</kbd>
+	<script>  
+		var d = new Date();
+		document.write(d.toUTCString()) 
+	</script>
+
+	<hr/>
+	<kbd>Browser</kbd>
+	<script> document.write(navigator.userAgent) </script>
+
+	<hr/>
+	<kbd>Plugin</kbd>
+	<script>
+		var plugin = []
+
+		for (var i = 0; i < navigator.plugins.length; i++) {
+			plugin.push(navigator.plugins[i].name); 
+		}
+
+		document.write(plugin.toString());
+	</script>
+	</div>
+	</div>
+</div>
+<div class="col-sm-4">
+	<div class="panel panel-info">
+	<div class="panel-heading">
+		<span class="glyphicon glyphicon-modal-window"></span>
+		<b>Device Information</b></div>
+	<div class="panel-body">
+
+	<kbd>Platform</kbd>
+	<script> document.write(navigator.platform) </script>
+	<script>
+		if(window.orientation != undefined){
+			document.write("(" + window.orientation + ")") 
+		} 
+</script>
+
+	<hr/>
+	<kbd>Battery</kbd> <span id="battery"></span>
+	<script>
+	    navigator.getBattery().then(function(battery) {
+	        updateBatteryStatus(battery);
+	        battery.onchargingchange = function() { updateBatteryStatus(battery); };
+	        battery.onlevelchange = function() { updateBatteryStatus(battery); };
+	        battery.ondischargingtimechange = function() { updateBatteryStatus(battery); };
+	    });
+
+	    function updateBatteryStatus(battery) {
+	    	var battery = Math.round(battery.level * 100);
+	    	document.getElementById("battery").innerHTML = battery + "%"
+	    }
+	</script>
+
+	<hr/>
+	<kbd>Graphic Driver</kbd>
+	<canvas id="canvas" width="1" height="1"></canvas>
+	<script>
+		var c = document.getElementById("canvas");
+		var webgl = c.getContext("experimental-webgl");
+		var extension = webgl.getExtension('WEBGL_debug_renderer_info');
+		var vendor = webgl.getParameter(extension.UNMASKED_VENDOR_WEBGL);
+		var renderer = webgl.getParameter(extension.UNMASKED_RENDERER_WEBGL);
+
+		document.write("<br/><b>Vendor: </b>" + vendor + "<br/><b>Renderer: </b>" + renderer);
+	</script>
+
+	<hr/>
+
+	<kbd>Screen</kbd>
+
+	 <table class="table" style="font-size:	small;">
+	    <thead>
+	      <tr>
+	        <td></td>
+	        <td><b>Height</b></td>
+	        <td><b>Width</b></td>
+	      </tr>
+	    </thead>
+	    <tbody>
+	      <tr class="warning">
+	        <td><b>Screen</b></td>
+	        <td><script>document.write(screen.availHeight)</script></td>
+	        <td><script>document.write(screen.availWidth)</script></td>
+	      </tr>
+	      <tr>
+	        <td><b>Total</b></td>
+	        <td><script>document.write(screen.height)</script></td>
+	        <td><script>document.write(screen.width)</script></td>
+	      </tr>
+	    </tbody>
+	  </table>
+	</small>
+	</div></div>
+</div>
+<div class="col-sm-4">
+	<div class="panel panel-success">
+	<div class="panel-heading">
+		<span class="glyphicon glyphicon-signal"></span>
+		<b>Network Information</b></div>
+	<div class="panel-body">
+
+	<kbd>Public IP Address</kbd> <span id="ipaddrpub"></span>
+
+	<script>
+		$.getJSON('http://ip-api.com/json', function(data){
+	    	document.getElementById("ipaddrpub").innerHTML = data.query + " (" + data.isp + ")";
+
+		});
+	</script>
+
+
+	<hr/>
+
+	<kbd>Internal IP Address</kbd> <span id="ipaddrpri"></span>
+	<script>
+		getIPs(function(ip){
+			var privateip = ip;
+			document.getElementById("ipaddrpri").innerHTML = privateip;
+			scanMyNetwork(privateip);
+		});
+	</script>
+
+	<hr/>
+
+	<kbd>Connection Type</kbd>
+	<script> document.write(navigator.connection.effectiveType)</script>
+
+	<hr/>
+
+	<kbd>Local Network Device</kbd>
+	<script>
+		
+	</script>
+	<div id="networkscan"></div>
+	<span id="progress"></span>
+	</div>
+
+	</div></div>
+</div>
+</div>
+</div>
+</body>
+</html>
